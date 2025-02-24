@@ -1,0 +1,77 @@
+Requirements that drive the architecture:
+
+1. Inflexible requirement - #1
+--> Zero coupling between child projects.
+--> No importing of functions/objects/classes/etc
+--> No shared state
+--> Shared libraries through micro frontend is ok
+
+
+Why are these requirements required?
+
+--> Consider an example where you have three containers: 
+1. Marketing
+    - Home Page
+    - Products Page
+2. Authentication
+    - Login Page
+    - Sign Up Page
+3. Dashboard
+
+
+--> Now if Marketing and Authentication are tightly coupled together means that suppose both of the containers share the redux reducer functions.
+--> If suppose in the near future you decide to remove the Marketing container with some other framework or library then you will also have to make changes to the Authentication container which increases your work.
+--> To prevent that you should have zero coupling between child projects.
+
+
+
+2. Inflexible requirement - #2
+--> Non zero coupling between container and child apps.
+--> Container should'nt assume that a child is using a particular framework
+--> Any necessary communication done with callbacks or simple events
+
+In practical scenario there has to be some level of communication between two applications
+
+
+
+3. Inflexible requirement - #3
+--> CSS from one project should not affect the other 
+
+
+4. Inflexible requirement - #4
+--> Version control (monorepo vs seperate) should'nt have any impact on the overall project
+--> Some people want to use monorepos
+--> Some people wish to use seperate repository
+
+5. Inflexible requirement - #5
+--> Container should be able to decide to always use the latest version of a microfrontend or specify a specific version
+
+
+
+
+
+
+
+
+
+
+
+
+-webpack.common.js
+// The goal of a loader is to tell webpack to process some different files as we start to import them into our project.
+// Meaning loaders are used to transform/process a file into our project that is not just plain javascript file so that webpack can bundle them.
+// CSS loaders : Allows you to import CSS files in your javscript
+// Babel loaders : Transpiles newer ES6+ javascript or typescript into older javascript for better browser compatibility
+// File loaders/URL loaders : Lets you import images or fonts turning them into urls
+// A loader acts as a preprocessor that converts a file from its original format and convert it into a format that the webpack can handle or read.
+// For example converting SAAS, Typescript, images into CSS strings, javascript, data URI's.
+
+// A preset is a pre defined collection of plugins that tells babel on how to transform the code.
+// For example '@babel/preset-env' preset instructs babel through babel-loader and tells to transforms js syntax to modern browser compatibility code.
+// For example '@babel/preset-react' preset instructs babel through babel-loader and tells to transforms jsx syntax to modern browser compatibility code.
+
+// A preset is a collection of plugins and a plugin does one specific job.
+
+// AST - Abstract Syntax tree is a tree like representation of your source code that compilers, interpreters, and babel uses internally to understand your code.
+
+// @babel/plugin-transform-runtime - It helps to remove duplication of code reducing the bundle size. Babel inlines small helper functions in all the files where those functions are needed. This plugin helps to seperate out the duplicate code into one seperate file and those helper functions are imported from that location. It can drastically shrink your bundle size if there are hundreds of such functions.

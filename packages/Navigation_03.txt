@@ -1,0 +1,124 @@
+--> When i click on the pricing button. I will navigate to the pricing page. But when i navigate back to "/" the navigation breaks. I am unable to navigate. As of now i have only created a container and used the Landing Page and Pricing Page from marketing app.
+
+Both the container + individual subApps need routing features.
+-> Users can navigate to different sub applications using routing built into the container.
+-> Users can navigate in a sub application using routing built into a sub application itself.
+-> Not all sub applications will require routing.
+
+
+Sub applications might need to add in new pages/routes all the time.
+-> New routes added to a sub application should not require a re deploy of the container.
+
+
+We might need to show two or more micro microfrontends at the same time.
+-> This will occur all the time if you have some kind of sidebar nav that is built in as a seperate frontend application (micro frontend).
+-> Suppose you have a sidebar panel which will list all the links. When you click on the links it will navigate them to other micro frontend sub applications.
+-> This sidebar panel is built as a seperate microfrontend application.
+
+
+
+We want to be able to use off-the-shelf routing solutions.
+-> Building a routing library can be hard - we don't want to do that.
+-> Some amount of custom coding is OK.
+
+
+We should be able to test and use the navigation in both hosted mode and in isolation as well. So i should be able to test the marketing application in localhost:8080 and localhost:8081 as well.
+
+
+If different applications need to communicate information, it should be done in a very generic way.
+-> Each application might be using a completely different navigation framework.
+-> We might swap out or upgrade navigation libraries all the time - should'nt require a rewrite of the rest of the app.
+
+
+
+
+
+
+
+
+There are two major components of the routing libraries;
+1. History - Object to get and set the current path the user is visiting
+2. Router - It shows different content based on the current path
+
+All of the routing libraries generally implement three kinds of history objects: 
+1. Browser History : This will look at the url everything after the domain name to figure out what is the current path.
+For example : https://app.com/marketing/pricing
+Browser History will take out the string /marketing/pricing pass it to the router and then the router will decide what component to render based upon this string.
+
+2. Memory or Abstract History : It keeps tract of the current path in the memory
+
+3. Hash History
+
+
+
+
+The most common way of using react router in micro frontends is using Browser History in parent container and Memory History in all the sub applications.
+Only the Browser Router of the parent container will look into the browser address bar and take a look at the url inside there and eventually update it as well.
+Browser router makes use of History API from the browser and keeps the address bar in sync with the application's global state.
+Memory router does not directly interact with the address bar url. Instead it maintains a state internally by creating an isolation environment without interferring with the global state of application.
+
+
+                           CONTAINER - Browser Router
+                     ________________|________________
+                    |                                 |
+      MARKETING APP - Memory Router     DASHBOARD APP - Memory Router
+
+By converting the BrowserRouter of marketing app to MemoryRouter; the navigation will break. We will have to manually give the history object to the marketing application to keep it sync with the global state routing.
+
+
+
+When you visit localhost:8080/; two copies of history is created. One is browser history and other is the memory history.
+
+
+
+    localhost:8080/
+           |
+           |                                                    Container's Browser History
+Container's Browser History                                                ("/")
+         ("/")               ---> Click on 'pricing' link --->               |
+           |                      in the marketing app                       |
+           |                                                    Marketing's Memory History
+Marketing's Memory History                                              ("/pricing")
+         ("/")
+
+
+--> The default routes of the browser history and memory history are "/".
+--> When you navigate to "/pricing" from the marketing app. As we have used memory router with the marketing app; the container's browser history will be "/" and marketing app's memory history will be "/pricing".
+
+
+
+    localhost:8080/pricing
+           |
+           |                                                    Container's Browser History
+Container's Browser History                                             ("/pricing")
+         ("/pricing")        ---> Click on 'pricing' link --->               |
+           |                      in the marketing app                       |
+           |                                                    Marketing's Memory History
+Marketing's Memory History                                              ("/pricing")
+         ("/")
+
+--> Stuff gets broken when we use Memory History.
+
+--> Clicking a link inside of marketing application will update only the Memory history of the marketing router and not the parent browser history.
+--> So the history will update for the nearest router only. If we click on a link inside the container then it will update the history of the browser router which is the nearest.
+
+To resolve this issue we will have to establish a communication between two applications:
+
+User clicks link governed by Container(Browser history) ---> Communicate change down to Marketing ---> Marketing's Memory history should update its current path
+User clicks link governed by Marketing(Memory history) --> Communicate change up to Container --> Container's Browser history should update its current path
+
+
+
+
+
+******** COMMUNICATING THROUGH CALLBACKS ********
+
+User clicks link in marketing app:-
+Container app --> Passing a callback function onNavigate() inside the mount function as a callback --> Inside Marketing app - listen to the route change --> When user clicks on pricing link in marketing app --> Call onNavigate to update the container's path and tell the container that the path has changed. 
+
+User clicks link in container app:-
+Marketing app --> Passing a function onParentNavigate() by returning it in mount function --> Inside Container app - listen to the route change --> When user clicks on app link in container app --> Call onParentNavigate to update the marketing's memory path and tell the marketing memory router that path has changed.
+
+
+BUT:
+When using each individual app in isolation; you need to make sure to use BrowserRouter in each isolated apps. To do that we will set a conditional statement to use createBrowserRouter() instead of createMemoryRouter()

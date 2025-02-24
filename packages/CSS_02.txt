@@ -1,0 +1,48 @@
+--> The container and Marketing application were both using the same css library that is material ui.
+--> Two different projects using the same css-in-js library.
+--> Any time this happens you might get class name collision.
+
+Issue:
+--> Container application is using its own material ui.
+--> Marketing application is using its own material ui.
+--> Consider an example of heroContent from the Landing Page. We applied custom styles using makeStyles and heroContent.
+
+const useStyles = makeStyles((theme) => ({
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6),
+  }
+}))
+
+--> This class name is applied to a div.
+<div class={classes.heroContent}></div>
+
+--> This css is converted to <div class="makeStyles-heroContent-2"></div> by javascript during build process on development.
+
+--> Further the long name of this css is reduced when generating build for production. <div class="jss2"></div>
+
+--> Now consider container as seperate application having a div <div class="jss2"></div>
+
+--> Consider marketing as seperate application having a div <div class="jss2"></div>
+
+--> We have connected both of these applications using module federation method so both of their css will conflict and cause css collision.
+
+Container application:
+.jss2 {
+    border : 3px solid black
+}
+
+Marketing application:
+.jss2 {
+    padding : 30px
+}
+
+To resolve this issue; material ui has something called createGenerateClassName
+Inside marketing application in App.js:
+const generateClassName = createGenerateClassName({
+    productionPrefix : "ma"
+})
+
+<StylesProvider generateClassName={generateClassName}></StylesProvider>
+
+This means that the material ui will generate a random className with a prefix of ma

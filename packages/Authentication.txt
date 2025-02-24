@@ -1,0 +1,24 @@
+--> Auth app is just for signing in and signing up the users. Thats it.
+--> Auth app is not for enforcing permissions, allowing access to certain routes or figuring out if the user is signed in or not.
+
+--> Two approaches for handling auth:
+1. Each app is aware of auth
+2. Centralize auth in container
+
+--> Option 1 requires the auth logic in all of the sub apps which means a lot of duplication of code. So we will be focusing on option 2.
+
+
+                            ___________________________________
+                           |             Container             |
+                           |  isAuthenticated --> true/false   |
+                           |___________________________________|
+                __________________________|______________
+               | onSignIn()                              | isAuthenticated
+         ______|______                          _________|_______
+        |   Auth App  |                        |  Dashboard App  |                                
+        |_____________|                        |_________________|
+
+
+--> We will be passing onSignIn function from Container to Auth app as a callback function. As soon as the user authenticates then we will call the function and it will change the state of isAuthenticated state inside the Container.
+--> We can pass the same state to the Dashboard app and check wether the user is authenticated or not and act accordingly.
+

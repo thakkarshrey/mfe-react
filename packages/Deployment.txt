@@ -1,0 +1,14 @@
+--> Want to deploy each microfrontend independently (including the container)
+--> Location of child app remoteEntry.js files must be known at the build time.
+--> Many frontend deployment solutions assume you're deploying a single project - we need something that can handle multiple different ones.
+--> Need a CI/CD pipeline of some sort
+--> At present, the remoteEntry.js file name is fixed. Need to think about caching issues.
+
+
+
+--> We will be creating a monorepo on github. It is not necessary to create a monorepo. We can even create seperate repositories for all the projects.
+--> Considering there are teams for all the projects; github will check if the code inside the container has changed then it will start the build process which is a part of CI and once the build is generated and checked then we will be deploying it to Amazon S3.
+
+--> And when a user visits the url of our website then instead of serving the user directly through the S3 bucket; we will use a CDN (Content Delivery Network). Amazon CloudFront as a mediator. 
+
+--> Suppose a user visits 'app.com'. The CDN will send a request to S3 and it will look for the index.html of parent app. It will return index.html through the CDN. Now the browser will parse index.html file and it will encounter a script tag which contains main.js file. Javascript will read the main.js file and it will have the imports for the remote file so it will then fetch remoteEntry.js file of marketing app which will then fetch main.js file of marketing app.
