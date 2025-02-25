@@ -44,6 +44,7 @@ export default () => {
           </Switch>
         </Suspense>
       </StylesProvider>
+      {/* Comment just to update workflow */}
     </Router>
   );
 };
