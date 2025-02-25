@@ -11,7 +11,7 @@ on:
 defaults:
   run:
     working-directory: packages/container
-    # This will set our execution environment inside our container directory
+    # This will set our execution environment to be the container directory
 
 jobs:
   build:

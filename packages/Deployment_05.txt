@@ -28,3 +28,24 @@ Install dependencies                              |
 Create a production build using webpack           |
                |                                  |
 Upload the result to AWS S3 bucket             ___|
+
+
+
+You can create a workflow file from the github actions itself by going into the Actions tab inside github. You can create your server based on your requirement and based on your project. For example : Creating a Nodejs server.
+
+You can manually write it inside your github repository by following steps.
+
+Create .github folder in your root directory --> Create workflows folder inside it --> Create a container.yml file.
+Events:- There are certain events on which we can trigger the workflows.
+push, pull_request, Every 15 mins etc...
+
+yml files are written with certain indentation method. Refer the container.yml file to learn about the workflow.
+
+After writing the yml file for CI CD pipeline; we will need to setup the S3 bucket of AWS.
+
+Go to AWS and S3 section and create a bucket. By default S3 bucket access is not public so you need to make it public by going into the Properties and Permissions section.
+
+Now we will create an AWS policy.
+A policy is what allows multiple services on AWS to talk to each other and access different features inside of them.
+
+In this case we are creating a policy that will allow CloudFront Distribution Network to access all the files that we will be loading them into S3 bucket.
