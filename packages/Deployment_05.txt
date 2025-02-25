@@ -49,3 +49,22 @@ Now we will create an AWS policy.
 A policy is what allows multiple services on AWS to talk to each other and access different features inside of them.
 
 In this case we are creating a policy that will allow CloudFront Distribution Network to access all the files that we will be loading them into S3 bucket.
+
+After the s3 bucket is created we will add policies and change permissions to make it public.
+
+After that we will create a distribution in CloudFront and add origin domain from aws s3.
+
+After all the configurations done. we will create IAM user and create all the access keys needed and will add them to the github inside secrets. Now we will re run the jobs add you will see that the application is deployed to s3 bucket.
+
+Now visit the domain provided by the CloudFront and you will see an error.
+
+This error is because our application is deployed on the path /container/latest/ and our HtmlWebpackPlugin has attached the main.js file inside our index.html file at the / path. So you need to define the publicPath inside the webpack.prod.js file to access the files.
+
+
+Now we made changes to the webpack.prod.js file and now after pushing the code to the github. Our CI CD pipeline will create a new index.html file. But when we go to the CloudFront domain then we will see the index.html file is still serving main.js file  instead of /container/latest/main.js file.
+
+Cloudfront checks for any new files that are being added inside the S3 bucket and fetches them but it does not check whether something has changed inside of the file or not. So we will have to tell CloudFront to consider the latest index.html file only. To do this we have a section inside CloudFront called Invalidations.
+
+Now all the javascript files generated contains unique contenthash so everytime you create a build then the new js files will be considered instead of the old ones. The only file that is not cached is index.html. So we will have to use invalidation for this particular file.
+
+Instead of adding invalidation everytime, we will create invalidation in our workflow to automate things.
