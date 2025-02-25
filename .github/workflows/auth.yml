@@ -1,0 +1,47 @@
+name: deploy-auth
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - packages/auth/**
+      # Only run the workflow when we make specific changes to the container
+
+defaults:
+  run:
+    working-directory: packages/auth
+    # This will set our execution environment to be the container directory
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # So we write our actual commands that we want to execute on the server
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        # We want to first checkout the code that is present inside the repository and load it into the virtual machine environment that we will be using
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the application
+        run: npm run build
+
+        # This will give access to the aws cli and then we can run the command
+      - name: Access the AWS CLI tool
+        uses: shinyinc/action-aws-cli@v1.2
+
+      - name: Deploy the build artifacts to S3 bucket
+        run: aws s3 sync dist s3://${{ secrets.AWS_S3_BUCKET_NAME }}/auth/latest
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+
+      - name: Create AWS CloudFront Invalidation
+        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_INVALIDATION_ID }} --paths "/auth/latest/remoteEntry.js"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
